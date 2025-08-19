@@ -49,8 +49,7 @@ public class AdPlatformsController : ControllerBase
         {
             return BadRequest("Не корректный формат файла!!!");
         }
-
-
+        
         return Ok(new
         {
             FileName = file.FileName,
