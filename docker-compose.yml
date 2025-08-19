@@ -1,0 +1,12 @@
+﻿version: '3.8'
+
+services:
+  advertising_platforms:
+    image: advertising_platforms
+    build:
+      context: .
+      dockerfile: Advertising_platforms/Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
