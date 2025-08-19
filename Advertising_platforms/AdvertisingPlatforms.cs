@@ -27,51 +27,79 @@ public static class AdvertisingPlatforms
 
     public static async Task<string[]> ReadInfoFromFile(IFormFile file)
     {
-        using (var reader = new StreamReader(file.OpenReadStream()))
+        try
         {
-            string fileContent = await reader.ReadToEndAsync();
-            fileContent = fileContent.Replace("\r", "");
-
-            string[] ads = fileContent.Split("\n");
-
-            foreach (var curr in ads)
+            
+            using (var reader = new StreamReader(file.OpenReadStream()))
             {
-                string name = curr.Split(":")[0];
-                string[] locals = curr.Split(":")[1].Split(",");
-                for(byte i = 0; i < locals.Length; i++)
+                string fileContent = await reader.ReadToEndAsync();
+                fileContent = fileContent.Replace("\r", "");
+
+                string[] ads = fileContent.Split("\n");
+                
+                await ClearDictionary();
+
+                foreach (var line in ads)
                 {
+                    if (string.IsNullOrWhiteSpace(line)) continue;
 
-                    AddPlatform(locals[i], name);
+                    string[] parts = line.Split(":",  StringSplitOptions.RemoveEmptyEntries);
 
-                    while (true)
+                    if (parts.Length != 2) 
+                        continue;
+                    
+                    if (string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1])) 
+                        continue;
+
+                    // if (!parts[1].StartsWith("/")) 
+                    //     continue;
+                    
+                    
+                    string name = parts[0];
+                    string[] locals = parts[1].Split(",");
+                   
+                    
+                    
+                    for(byte i = 0; i < locals.Length; i++)
                     {
+                        if(!locals[i].StartsWith("/")) continue;
 
-                        int lastSlashIndex = locals[i].LastIndexOf('/');
+                        AddPlatform(locals[i], name);
 
-                        if (lastSlashIndex == 0)
+                        while (true)
                         {
-                            break;
-                        }
 
-                        if (lastSlashIndex > 0) 
-                        {
-                            locals[i] = locals[i].Substring(0, lastSlashIndex);
-                            AddPlatform(locals[i], name);
-                        }
-                        else
-                        {
-                            break;
+                            int lastSlashIndex = locals[i].LastIndexOf('/');
+
+                            if (lastSlashIndex == 0)
+                            {
+                                break;
+                            }
+
+                            if (lastSlashIndex > 0) 
+                            {
+                                locals[i] = locals[i].Substring(0, lastSlashIndex);
+                                AddPlatform(locals[i], name);
+                            }
+                            else
+                            {
+                                break;
+                            }
                         }
                     }
-                }
 
-            }
+                }
             
-            return ads;
+                return ads;
+            }
+        }
+        catch (Exception e)
+        {
+            return [];
         }
     }
 
-    public static async Task ClearDictionary()
+    private static async Task ClearDictionary()
     {
         AdvertisingPlatformsHash.Clear();
     }
