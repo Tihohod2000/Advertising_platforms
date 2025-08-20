@@ -72,37 +72,29 @@ public static class AdvertisingPlatforms
                         string local = locals[i].Trim();
                         //Если путь начинает не с /, то пропускаем
                         if(!local.StartsWith("/")) continue;
-
-                        //Добавляем в Dictionary
+                        
+                        //добавляем платформу в Dictionary
                         AddPlatform(local, name);
+                        
+                        //Получаем список ключей
+                        var keys = AdvertisingPlatformsHash.Keys;
 
-                        //Сокращаем путь по одному уровн вложенности
-                        while (true)
+                        //Добавляем площадки с широкими областями в списки площадок с узкими облостями
+                        foreach (var key in keys)
                         {
+                            //Пропускаем полностью совподающие локации
+                                if(key == local) continue;
 
-                            int lastSlashIndex = local.LastIndexOf('/');
-
-                            if (lastSlashIndex == 0)
-                            {
-                                break;
-                            }
-
-                            //отсекаем последнюю вложенность и добавляем в Dictionary
-                            if (lastSlashIndex > 0) 
-                            {
-                                
-                                local = local.Substring(0, lastSlashIndex);
-                                AddPlatform(local, name);
-                            }
-                            else
-                            {
-                                break;
-                            }
+                                //Если текущаа локация начинается с других слокаций, но не равны
+                                //Добавляем площадку в список
+                                //Это нужно чтобы сделать поиск площадок максимально быстрым
+                                if (key.StartsWith(local))
+                                {
+                                    AddPlatform(key, name);
+                                }
                         }
                     }
-
                 }
-            
                 return ads;
             }
         }
