@@ -14,7 +14,7 @@ docker-compose up --build
 Созданы 2 endpoint 
 1. Загрузка файла в формате .txt по пути
    ```
-   http://localhost:8080/api/adPlatforms/UploadAdPlatform
+   http://localhost:8080/api/adPlatforms/UploadAdPlatforms
    ```
    Пример файла:
    ```
@@ -38,11 +38,14 @@ docker-compose up --build
 
    Ответ:
    ```
-   {
-    "search": [
-        "Ревдинский рабочий",
-        "Крутая реклама",
-        "Яндекс.Директ"
-    ]
-   }
+       "result": {
+        "locals": "/ru/svrd/revda",
+        "success": true,
+        "message": "Данные найдены успешно",
+        "name": [
+            "Ревдинский рабочий",
+            "Крутая реклама",
+            "Яндекс.Директ"
+        ]
+    }
    ```
