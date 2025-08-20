@@ -37,8 +37,8 @@ public class AdPlatformsController : ControllerBase
     }
 
 
-    [HttpPost("UploadAdPlatform")]
-    public async Task<IActionResult> UploadAdPlatform()
+    [HttpPost("UploadAdPlatforms")]
+    public async Task<IActionResult> UploadAdPlatforms()
     {
         // Проверяем, есть ли файл в запросе
         if (Request.Form.Files.Count == 0)
