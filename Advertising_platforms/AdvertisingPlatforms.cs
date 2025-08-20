@@ -9,23 +9,12 @@ public static class AdvertisingPlatforms
         //Проверяем записан путь в качестве ключа или нет
         if (AdvertisingPlatformsHash.ContainsKey(local))
         {
-            //получаем список названий по ключу(локации) 
-            List<string> platforms = AdvertisingPlatformsHash[local];
-            
-            //проверяем есть ли название площадки в списке
-            foreach (var platform in platforms)
+            //Проверяем есть ли в списке по ключу название
+            if (!AdvertisingPlatformsHash[local].Contains(name))
             {
-                //локация уже записана, останавливаем
-                if (platform == name)
-                {
-                    return;
-                }
+                //Если нет названия, то добавляем
+                AdvertisingPlatformsHash[local].Add(name);
             }
-            
-            //есть ключ, но не записано название
-            //получаем список по ключу(локации) и добавляем в Dictionary
-            AdvertisingPlatformsHash[local].Add(name);
-            
         }
         else
         {
@@ -34,10 +23,42 @@ public static class AdvertisingPlatforms
         }
     }
 
-    public static async Task<string[]> ReadInfoFromFile(IFormFile file)
+    public static AdvertisingPlatformByLocalDto AdvertisingPlatformByLocal(string location)
     {
+        var result = new AdvertisingPlatformByLocalDto();
+        result.Locals = location;
+
+        if (AdvertisingPlatformsHash.TryGetValue(location, out var value))
+        {
+            result.Success = true;
+            result.Message = "Данные найдены успешно";
+            result.Name = value;
+        }
+        else
+        {
+            result.Success = false;
+            result.Message = $"Данные по локации: {location} не найдены";
+            result.Name = [];
+        }
+
+        
+        
+        return result;
+    } 
+
+    public static async Task<FileReadResultDto> ReadInfoFromFile(IFormFile file)
+    {
+        var result = new FileReadResultDto();
+        
         try
         {
+            if (file == null || file.Length == 0)
+            {
+                result.Success = false;
+                result.ErrorMessage = "Файл не предоставлен или пуст";
+                return result;
+            }
+            
             using (var reader = new StreamReader(file.OpenReadStream()))
             {
                 string fileContent = await reader.ReadToEndAsync();
@@ -80,28 +101,34 @@ public static class AdvertisingPlatforms
                         var keys = AdvertisingPlatformsHash.Keys;
 
                         //Добавляем площадки с широкими областями в списки площадок с узкими облостями
-                        foreach (var key in keys)
+                        foreach (var existingKey in keys)
                         {
                             //Пропускаем полностью совподающие локации
-                                if(key == local) continue;
+                                if(existingKey == local) continue;
 
                                 //Если текущаа локация начинается с других слокаций, но не равны
                                 //Добавляем площадку в список
                                 //Это нужно чтобы сделать поиск площадок максимально быстрым
-                                if (key.StartsWith(local))
+                                if (existingKey.StartsWith(local))
                                 {
-                                    AddPlatform(key, name);
+                                    AddPlatform(existingKey, name);
                                 }
                         }
                     }
                 }
-                return ads;
+                // return ads;
             }
+            result.Success = true;
+            result.PlatformsByLocal = AdvertisingPlatformsHash;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            return [];
+            result.Success = false;
+            result.ErrorMessage = $"Ошибка обработки файла: {ex.Message}";
+            // result.RawLines = Array.Empty<string>();
         }
+
+        return result;
     }
 
     //Метод очистки Dictionary

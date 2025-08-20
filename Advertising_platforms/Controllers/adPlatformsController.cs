@@ -8,22 +8,28 @@ namespace Advertising_platforms.Controllers;
 public class AdPlatformsController : ControllerBase
 {
     [HttpGet("search")]
-    public Task<IActionResult> Search()
+    public async Task<IActionResult> Search([FromQuery] string location)
     {
-        string location = HttpContext.Request.Query["location"].ToString();
+        // string location = HttpContext.Request.Query["location"].ToString();
 
         try
         {
-            var search = AdvertisingPlatforms.AdvertisingPlatformsHash[location];
-            return Task.FromResult<IActionResult>(Ok(new
+            var result = AdvertisingPlatforms.AdvertisingPlatformByLocal(location);
+
+            if (result.Success == false)
             {
-                search
-            }));
+                return NotFound(result);
+            }
+            
+            return Ok(new
+            {
+                search = result
+            });
         }
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return Task.FromResult<IActionResult>(NotFound($"Данные по локации {location} не найдены!"));
+            return NotFound($"Данные по локации {location} не найдены!");
         }
     }
 
@@ -37,25 +43,20 @@ public class AdPlatformsController : ControllerBase
             return BadRequest("No file uploaded.");
         }
         
-        IFormFile file = Request.Form.Files[0];
+        // IFormFile file = Request.Form.Files[0];
+        FileUploadRequestDto file = new FileUploadRequestDto();
+        file.File = Request.Form.Files[0];
         
-        if (Path.GetExtension(file.FileName).ToLower() != ".txt")
+        if (Path.GetExtension(file.File.FileName).ToLower() != ".txt")
         {
             return BadRequest("Only .txt file.");
         }
 
-        string[] fileContent = await AdvertisingPlatforms.ReadInfoFromFile(file);
-        if (fileContent.Length <= 0)
-        {
-            return BadRequest("Не корректный формат файла!!!");
-        }
+        var result = await AdvertisingPlatforms.ReadInfoFromFile(file.File);
         
         return Ok(new
         {
-            FileName = file.FileName,
-            Size = file.Length,
-            Content = fileContent,
-            Platforms = AdvertisingPlatforms.AdvertisingPlatformsHash
+            result
         });
     }
 }
