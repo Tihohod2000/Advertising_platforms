@@ -38,7 +38,7 @@ public static class AdvertisingPlatforms
         {
             result.Success = false;
             result.Message = $"Данные по локации: {location} не найдены";
-            result.Name = [];
+            // result.Name = [];
         }
 
         
@@ -46,9 +46,10 @@ public static class AdvertisingPlatforms
         return result;
     } 
 
-    public static async Task<FileReadResultDto> ReadInfoFromFile(IFormFile file)
+    public static async Task<FileReadResultDto> ReadInfoFromFile(FileUploadRequestDto fileUpload)
     {
         var result = new FileReadResultDto();
+        var file = fileUpload.File;
         
         try
         {

@@ -18,10 +18,16 @@ public class AdPlatformsController : ControllerBase
 
             if (result.Success == false)
             {
-                return NotFound(result);
+                return NotFound(new
+                {
+                    result
+                });
             }
             
-            return Ok(result);
+            return Ok(new
+            {
+                result
+            });
         }
         catch (Exception e)
         {
@@ -37,7 +43,10 @@ public class AdPlatformsController : ControllerBase
         // Проверяем, есть ли файл в запросе
         if (Request.Form.Files.Count == 0)
         {
-            return BadRequest("No file uploaded.");
+            return BadRequest(new
+            {
+                message = "No file uploaded."
+            });
         }
         
         // IFormFile file = Request.Form.Files[0];
@@ -46,10 +55,13 @@ public class AdPlatformsController : ControllerBase
         
         if (Path.GetExtension(file.File.FileName).ToLower() != ".txt")
         {
-            return BadRequest("Only .txt file.");
+            return BadRequest(new
+            {
+                message = "Only .txt file."
+            });
         }
 
-        var result = await AdvertisingPlatforms.ReadInfoFromFile(file.File);
+        FileReadResultDto result = await AdvertisingPlatforms.ReadInfoFromFile(file);
         
         return Ok(new
         {

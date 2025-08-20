@@ -1,6 +1,6 @@
 namespace Advertising_platforms;
 
-// DTO для представления данных о рекламной площадке
+// DTO для представления данных о рекламных площадках
 public class AdvertisingPlatformByLocalDto
 {
     public string Locals { get; set; } = string.Empty;
@@ -17,7 +17,7 @@ public class FileReadResultDto
     public Dictionary<string, List<string>> PlatformsByLocal { get; set; } = new Dictionary<string, List<string>>();
 }
 
-// DTO для запроса файла
+// DTO для передачи файла
 public class FileUploadRequestDto
 {
     public IFormFile File { get; set; }
