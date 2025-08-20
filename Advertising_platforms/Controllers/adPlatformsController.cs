@@ -21,10 +21,7 @@ public class AdPlatformsController : ControllerBase
                 return NotFound(result);
             }
             
-            return Ok(new
-            {
-                search = result
-            });
+            return Ok(result);
         }
         catch (Exception e)
         {
