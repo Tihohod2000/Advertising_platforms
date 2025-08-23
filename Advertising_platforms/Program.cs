@@ -16,22 +16,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(); 
-    
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
 app.MapControllers();
-
-
-
-// app.MapGet("/testtttt", () =>
-//     {
-//         Console.WriteLine("test here");
-//         
-//         return Results.Ok("Test");
-//     })
-//     .WithName("testt");
 
 app.Run();
 
