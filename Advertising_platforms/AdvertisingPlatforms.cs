@@ -28,7 +28,7 @@ public static class AdvertisingPlatforms
         var result = new AdvertisingPlatformByLocalDto();
         result.Locals = location;
 
-        if (AdvertisingPlatformsHash.TryGetValue(location, out var value))
+        if (AdvertisingPlatformsHash.TryGetValue(location, out List<string>? value))
         {
             result.Success = true;
             result.Message = "Данные найдены успешно";
@@ -38,7 +38,6 @@ public static class AdvertisingPlatforms
         {
             result.Success = false;
             result.Message = $"Данные по локации: {location} не найдены";
-            // result.Name = [];
         }
 
         
@@ -117,7 +116,6 @@ public static class AdvertisingPlatforms
                         }
                     }
                 }
-                // return ads;
             }
             result.Success = true;
             result.PlatformsByLocal = AdvertisingPlatformsHash;
@@ -126,7 +124,6 @@ public static class AdvertisingPlatforms
         {
             result.Success = false;
             result.ErrorMessage = $"Ошибка обработки файла: {ex.Message}";
-            // result.RawLines = Array.Empty<string>();
         }
 
         return result;

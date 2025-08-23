@@ -14,7 +14,7 @@ public class AdPlatformsController : ControllerBase
 
         try
         {
-            var result = AdvertisingPlatforms.AdvertisingPlatformByLocal(location);
+            AdvertisingPlatformByLocalDto result = AdvertisingPlatforms.AdvertisingPlatformByLocal(location);
 
             if (result.Success == false)
             {
