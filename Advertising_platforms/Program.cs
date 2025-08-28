@@ -1,9 +1,13 @@
+using Advertising_platforms;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // ✅ Подключаем Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddScoped<AdvertisingPlatforms, AdvertisingPlatforms>();
+
 
 builder.WebHost.ConfigureKestrel(options =>
 {

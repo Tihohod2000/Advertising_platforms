@@ -7,6 +7,13 @@ namespace Advertising_platforms.Controllers;
 [Route("api/[controller]")]
 public class AdPlatformsController : ControllerBase
 {
+    private readonly AdvertisingPlatforms _advertisingPlatforms;
+
+    public AdPlatformsController(AdvertisingPlatforms advertisingPlatforms)
+    {
+        _advertisingPlatforms = advertisingPlatforms;
+    }
+
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string location)
     {
@@ -14,7 +21,7 @@ public class AdPlatformsController : ControllerBase
 
         try
         {
-            AdvertisingPlatformByLocalDto result = AdvertisingPlatforms.AdvertisingPlatformByLocal(location);
+            AdvertisingPlatformByLocalDto result = _advertisingPlatforms.AdvertisingPlatformByLocal(location);
 
             if (result.Success == false)
             {
@@ -61,7 +68,7 @@ public class AdPlatformsController : ControllerBase
             });
         }
 
-        FileReadResultDto result = await AdvertisingPlatforms.ReadInfoFromFile(file);
+        FileReadResultDto result = await _advertisingPlatforms.ReadInfoFromFile(file);
         
         return Ok(new
         {

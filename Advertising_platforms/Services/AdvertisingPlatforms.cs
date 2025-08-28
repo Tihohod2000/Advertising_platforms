@@ -1,10 +1,11 @@
 namespace Advertising_platforms;
 
-public static class AdvertisingPlatforms
+public class AdvertisingPlatforms
 {
-    public static Dictionary<string, List<string>> AdvertisingPlatformsHash { get; private set; } = new Dictionary<string, List<string>>();
+    public static Dictionary<string, List<string>> AdvertisingPlatformsHash { get; private set; } =
+        new Dictionary<string, List<string>>();
 
-    private static void AddPlatform(string local, string name)
+    private void AddPlatform(string local, string name)
     {
         //Проверяем записан путь в качестве ключа или нет
         if (AdvertisingPlatformsHash.ContainsKey(local))
@@ -22,8 +23,8 @@ public static class AdvertisingPlatforms
             AdvertisingPlatformsHash[local] = new List<string> { name };
         }
     }
-    
-    private static void AddPlatform(string local, List<string> names)
+
+    private void AddPlatform(string local, List<string> names)
     {
         //Проверяем записан путь в качестве ключа или нет
         if (AdvertisingPlatformsHash.ContainsKey(local))
@@ -37,16 +38,23 @@ public static class AdvertisingPlatforms
                     AdvertisingPlatformsHash[local].Add(name);
                 }
             }
-           
         }
         else
         {
-            //Записываем новое значение
-            AdvertisingPlatformsHash[local].AddRange(names);
+            if (names.Count <= 0)
+            {
+                AdvertisingPlatformsHash[local] = new List<string>();
+            }
+            else
+            {
+                //Записываем новое значение
+                AdvertisingPlatformsHash[local].AddRange(names);
+            }
+            
         }
     }
 
-    public static AdvertisingPlatformByLocalDto AdvertisingPlatformByLocal(string location)
+    public AdvertisingPlatformByLocalDto AdvertisingPlatformByLocal(string location)
     {
         var result = new AdvertisingPlatformByLocalDto();
         result.Locals = location;
@@ -63,16 +71,15 @@ public static class AdvertisingPlatforms
             result.Message = $"Данные по локации: {location} не найдены";
         }
 
-        
-        
-        return result;
-    } 
 
-    public static async Task<FileReadResultDto> ReadInfoFromFile(FileUploadRequestDto fileUpload)
+        return result;
+    }
+
+    public async Task<FileReadResultDto> ReadInfoFromFile(FileUploadRequestDto fileUpload)
     {
         var result = new FileReadResultDto();
         var file = fileUpload.File;
-        
+
         try
         {
             if (file == null || file.Length == 0)
@@ -81,14 +88,14 @@ public static class AdvertisingPlatforms
                 result.ErrorMessage = "Файл не предоставлен или пуст";
                 return result;
             }
-            
+
             using (var reader = new StreamReader(file.OpenReadStream()))
             {
                 string fileContent = await reader.ReadToEndAsync();
                 fileContent = fileContent.Replace("\r", "");
 
                 string[] ads = fileContent.Split("\n");
-                
+
                 //Очищаем Dictionary
                 ClearDictionary();
 
@@ -97,43 +104,52 @@ public static class AdvertisingPlatforms
                     // Проверям пустали строка
                     if (string.IsNullOrWhiteSpace(line)) continue;
 
-                    string[] parts = line.Split(":",  StringSplitOptions.RemoveEmptyEntries);
+                    string[] parts = line.Split(":", StringSplitOptions.RemoveEmptyEntries);
 
                     //Проверяем наличие названия площадки и наличие путей
-                    if (parts.Length != 2) 
+                    if (parts.Length != 2)
                         continue;
-                    
+
                     //Если название или локация пусты, то пропускаем это строку
-                    if (string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1])) 
+                    if (string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
                         continue;
-                    
+
                     string name = parts[0];
                     string[] locals = parts[1].Trim().Split(",");
-                    
+
                     //поочереди добовляем пути для площадки
-                    for(byte i = 0; i < locals.Length; i++)
+                    for (byte i = 0; i < locals.Length; i++)
                     {
                         string local = locals[i].Trim();
                         //Если путь начинает не с /, то пропускаем
-                        if(!local.StartsWith("/")) continue;
-                        
+                        if (!local.StartsWith("/")) continue;
+
                         //добавляем платформу в Dictionary
                         AddPlatform(local, name);
+
+                        int index = local.LastIndexOf("/", StringComparison.Ordinal);
                         
+                        while (index != 0)
+                        {
+                            local = local.Substring(0, index);
+                            AddPlatform(local, new List<string>());
+                            index = local.LastIndexOf("/", StringComparison.Ordinal);
+                        }
+                        
+                        
+
                         //Получаем список ключей
                         var keys = AdvertisingPlatformsHash.Keys;
 
                         //Добавляем площадки с широкими областями в списки площадок с узкими облостями
                         foreach (var firstKey in keys)
                         {
-
-
                             foreach (var secondKey in keys)
                             {
                                 //Пропускаем полностью совподающие локации
-                                if ( firstKey == secondKey) continue;
-                                
-                                
+                                if (firstKey == secondKey) continue;
+
+
                                 if (firstKey.StartsWith(secondKey))
                                 {
                                     AddPlatform(firstKey, AdvertisingPlatformsHash[secondKey]);
@@ -143,6 +159,7 @@ public static class AdvertisingPlatforms
                     }
                 }
             }
+
             result.Success = true;
             result.PlatformsByLocal = AdvertisingPlatformsHash;
         }
