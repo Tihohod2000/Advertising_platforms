@@ -22,6 +22,29 @@ public static class AdvertisingPlatforms
             AdvertisingPlatformsHash[local] = new List<string> { name };
         }
     }
+    
+    private static void AddPlatform(string local, List<string> names)
+    {
+        //Проверяем записан путь в качестве ключа или нет
+        if (AdvertisingPlatformsHash.ContainsKey(local))
+        {
+            foreach (var name in names)
+            {
+                //Проверяем есть ли в списке по ключу название
+                if (!AdvertisingPlatformsHash[local].Contains(name))
+                {
+                    //Если нет названия, то добавляем
+                    AdvertisingPlatformsHash[local].Add(name);
+                }
+            }
+           
+        }
+        else
+        {
+            //Записываем новое значение
+            AdvertisingPlatformsHash[local].AddRange(names);
+        }
+    }
 
     public static AdvertisingPlatformByLocalDto AdvertisingPlatformByLocal(string location)
     {
@@ -101,18 +124,21 @@ public static class AdvertisingPlatforms
                         var keys = AdvertisingPlatformsHash.Keys;
 
                         //Добавляем площадки с широкими областями в списки площадок с узкими облостями
-                        foreach (var existingKey in keys)
+                        foreach (var firstKey in keys)
                         {
-                            //Пропускаем полностью совподающие локации
-                                if(existingKey == local) continue;
 
-                                //Если текущаа локация начинается с других слокаций, но не равны
-                                //Добавляем площадку в список
-                                //Это нужно чтобы сделать поиск площадок максимально быстрым
-                                if (existingKey.StartsWith(local))
+
+                            foreach (var secondKey in keys)
+                            {
+                                //Пропускаем полностью совподающие локации
+                                if ( firstKey == secondKey) continue;
+                                
+                                
+                                if (firstKey.StartsWith(secondKey))
                                 {
-                                    AddPlatform(existingKey, name);
+                                    AddPlatform(firstKey, AdvertisingPlatformsHash[secondKey]);
                                 }
+                            }
                         }
                     }
                 }
