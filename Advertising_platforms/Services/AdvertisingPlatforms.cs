@@ -78,7 +78,7 @@ public class AdvertisingPlatforms
     public async Task<FileReadResultDto> ReadInfoFromFile(FileUploadRequestDto fileUpload)
     {
         var result = new FileReadResultDto();
-        var file = fileUpload.File;
+        var file = fileUpload._file;
 
         try
         {

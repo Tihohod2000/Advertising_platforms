@@ -45,28 +45,22 @@ public class AdPlatformsController : ControllerBase
 
 
     [HttpPost("UploadAdPlatforms")]
-    public async Task<IActionResult> UploadAdPlatforms()
+    public async Task<IActionResult> UploadAdPlatforms(IFormFile fileUpload)
     {
-        // Проверяем, есть ли файл в запросе
-        if (Request.Form.Files.Count == 0)
+        if (fileUpload == null || fileUpload.Length == 0)
         {
-            return BadRequest(new
-            {
-                message = "No file uploaded."
-            });
+            return BadRequest(new { message = "No file uploaded." });
         }
         
-        // IFormFile file = Request.Form.Files[0];
-        FileUploadRequestDto file = new FileUploadRequestDto();
-        file.File = Request.Form.Files[0];
-        
-        if (Path.GetExtension(file.File.FileName).ToLower() != ".txt")
+        if (Path.GetExtension(fileUpload.FileName).ToLower() != ".txt")
         {
             return BadRequest(new
             {
                 message = "Only .txt file."
             });
         }
+
+        FileUploadRequestDto file = new FileUploadRequestDto(fileUpload);
 
         FileReadResultDto result = await _advertisingPlatforms.ReadInfoFromFile(file);
         
