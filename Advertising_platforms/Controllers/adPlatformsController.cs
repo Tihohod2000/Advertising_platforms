@@ -7,6 +7,13 @@ namespace Advertising_platforms.Controllers;
 [Route("api/[controller]")]
 public class AdPlatformsController : ControllerBase
 {
+    private readonly AdvertisingPlatforms _advertisingPlatforms;
+
+    public AdPlatformsController(AdvertisingPlatforms advertisingPlatforms)
+    {
+        _advertisingPlatforms = advertisingPlatforms;
+    }
+
     [HttpGet("search")]
     public async Task<IActionResult> Search([FromQuery] string location)
     {
@@ -14,7 +21,7 @@ public class AdPlatformsController : ControllerBase
 
         try
         {
-            var result = AdvertisingPlatforms.AdvertisingPlatformByLocal(location);
+            AdvertisingPlatformByLocalDto result = _advertisingPlatforms.AdvertisingPlatformByLocal(location);
 
             if (result.Success == false)
             {
@@ -38,22 +45,14 @@ public class AdPlatformsController : ControllerBase
 
 
     [HttpPost("UploadAdPlatforms")]
-    public async Task<IActionResult> UploadAdPlatforms()
+    public async Task<IActionResult> UploadAdPlatforms(IFormFile fileUpload)
     {
-        // Проверяем, есть ли файл в запросе
-        if (Request.Form.Files.Count == 0)
+        if (fileUpload == null || fileUpload.Length == 0)
         {
-            return BadRequest(new
-            {
-                message = "No file uploaded."
-            });
+            return BadRequest(new { message = "No file uploaded." });
         }
         
-        // IFormFile file = Request.Form.Files[0];
-        FileUploadRequestDto file = new FileUploadRequestDto();
-        file.File = Request.Form.Files[0];
-        
-        if (Path.GetExtension(file.File.FileName).ToLower() != ".txt")
+        if (Path.GetExtension(fileUpload.FileName).ToLower() != ".txt")
         {
             return BadRequest(new
             {
@@ -61,7 +60,9 @@ public class AdPlatformsController : ControllerBase
             });
         }
 
-        FileReadResultDto result = await AdvertisingPlatforms.ReadInfoFromFile(file);
+        FileUploadRequestDto file = new FileUploadRequestDto(fileUpload);
+
+        FileReadResultDto result = await _advertisingPlatforms.ReadInfoFromFile(file);
         
         return Ok(new
         {

@@ -20,5 +20,9 @@ public class FileReadResultDto
 // DTO для передачи файла
 public class FileUploadRequestDto
 {
-    public IFormFile File { get; set; }
+    public FileUploadRequestDto(IFormFile File)
+    {
+        _file = File;
+    }
+    public IFormFile _file { get; private set; }
 }
