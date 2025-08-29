@@ -80,8 +80,7 @@ public class AdvertisingPlatforms
         var result = new FileReadResultDto();
         var file = fileUpload._file;
 
-        try
-        {
+        
             if (file == null || file.Length == 0)
             {
                 result.Success = false;
@@ -162,12 +161,6 @@ public class AdvertisingPlatforms
 
             result.Success = true;
             result.PlatformsByLocal = AdvertisingPlatformsHash;
-        }
-        catch (Exception ex)
-        {
-            result.Success = false;
-            result.ErrorMessage = $"Ошибка обработки файла: {ex.Message}";
-        }
 
         return result;
     }
