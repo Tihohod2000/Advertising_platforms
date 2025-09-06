@@ -8,27 +8,27 @@ namespace Advertising_platforms.Controllers;
 [Route("api/[controller]")]
 public class AdPlatformsController : ControllerBase
 {
-    private readonly AdvertisingPlatforms _advertisingPlatforms;
+    private readonly UploadAdvertisingPlatforms _uploadAdvertisingPlatforms;
 
-    public AdPlatformsController(AdvertisingPlatforms advertisingPlatforms)
+    public AdPlatformsController(UploadAdvertisingPlatforms uploadAdvertisingPlatforms)
     {
-        _advertisingPlatforms = advertisingPlatforms;
+        _uploadAdvertisingPlatforms = uploadAdvertisingPlatforms;
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string location)
+    public Task<IActionResult> Search([FromQuery] string location)
     {
-            AdvertisingPlatformByLocalDto result = _advertisingPlatforms.AdvertisingPlatformByLocal(location);
+            AdvertisingPlatformByLocalDto result = _uploadAdvertisingPlatforms.AdvertisingPlatformByLocal(location);
 
             if (result.Success == false)
             {
                 throw new KeyNotFoundException("Данные по локации не найдены!");
             }
             
-            return Ok(new
+            return Task.FromResult<IActionResult>(Ok(new
             {
                 result
-            });
+            }));
     }
 
 
@@ -47,7 +47,7 @@ public class AdPlatformsController : ControllerBase
 
         FileUploadRequestDto file = new FileUploadRequestDto(fileUpload);
 
-        FileReadResultDto result = await _advertisingPlatforms.ReadInfoFromFile(file);
+        FileReadResultDto result = await _uploadAdvertisingPlatforms.ReadInfoFromFile(file);
 
         if (result.Success == false)
         {

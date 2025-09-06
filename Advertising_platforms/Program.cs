@@ -6,7 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-builder.Services.AddScoped<AdvertisingPlatforms, AdvertisingPlatforms>();
+builder.Services.AddScoped<UploadAdvertisingPlatforms>();
+builder.Services.AddScoped<GettingAdvertisingPlatforms>();
 
 
 builder.WebHost.ConfigureKestrel(options =>

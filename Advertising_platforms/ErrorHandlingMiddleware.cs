@@ -2,6 +2,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Net;
 using System.Text.Json;
 
+namespace Advertising_platforms;
+
 public class ErrorHandlingMiddleware
 {
     private readonly RequestDelegate _next;
