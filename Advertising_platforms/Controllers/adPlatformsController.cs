@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
 
@@ -7,62 +8,53 @@ namespace Advertising_platforms.Controllers;
 [Route("api/[controller]")]
 public class AdPlatformsController : ControllerBase
 {
-    private readonly AdvertisingPlatforms _advertisingPlatforms;
+    private readonly UploadAdvertisingPlatforms _uploadAdvertisingPlatforms;
+    private readonly GettingAdvertisingPlatforms _gettingAdvertisingPlatforms;
 
-    public AdPlatformsController(AdvertisingPlatforms advertisingPlatforms)
+    public AdPlatformsController(UploadAdvertisingPlatforms uploadAdvertisingPlatforms, GettingAdvertisingPlatforms gettingAdvertisingPlatforms)
     {
-        _advertisingPlatforms = advertisingPlatforms;
+        _uploadAdvertisingPlatforms = uploadAdvertisingPlatforms;
+        _gettingAdvertisingPlatforms = gettingAdvertisingPlatforms;
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> Search([FromQuery] string location)
+    public Task<IActionResult> Search([FromQuery] string location)
     {
-        // string location = HttpContext.Request.Query["location"].ToString();
-
-        try
-        {
-            AdvertisingPlatformByLocalDto result = _advertisingPlatforms.AdvertisingPlatformByLocal(location);
+            AdvertisingPlatformByLocalDto result = _gettingAdvertisingPlatforms.AdvertisingPlatformByLocal(location);
 
             if (result.Success == false)
             {
-                return NotFound(new
-                {
-                    result
-                });
+                throw new KeyNotFoundException("Данные по локации не найдены!");
             }
             
-            return Ok(new
+            return Task.FromResult<IActionResult>(Ok(new
             {
                 result
-            });
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-            return NotFound($"Данные по локации {location} не найдены!");
-        }
+            }));
     }
 
 
     [HttpPost("UploadAdPlatforms")]
     public async Task<IActionResult> UploadAdPlatforms(IFormFile fileUpload)
     {
-        if (fileUpload == null || fileUpload.Length == 0)
+        if (fileUpload == null)
         {
-            return BadRequest(new { message = "No file uploaded." });
+            throw new ArgumentException("No file uploaded.");
         }
         
         if (Path.GetExtension(fileUpload.FileName).ToLower() != ".txt")
         {
-            return BadRequest(new
-            {
-                message = "Only .txt file."
-            });
+            throw new ArgumentException("Only .txt file.");
         }
 
         FileUploadRequestDto file = new FileUploadRequestDto(fileUpload);
 
-        FileReadResultDto result = await _advertisingPlatforms.ReadInfoFromFile(file);
+        FileReadResultDto result = await _uploadAdvertisingPlatforms.ReadInfoFromFile(file);
+
+        if (result.Success == false)
+        {
+            throw new ValidationException("Не корректный файл!");
+        }
         
         return Ok(new
         {

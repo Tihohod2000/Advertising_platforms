@@ -1,6 +1,6 @@
 namespace Advertising_platforms;
 
-public class AdvertisingPlatforms
+public class UploadAdvertisingPlatforms
 {
     public static Dictionary<string, List<string>> AdvertisingPlatformsHash { get; private set; } =
         new Dictionary<string, List<string>>();
@@ -53,35 +53,14 @@ public class AdvertisingPlatforms
             
         }
     }
-
-    public AdvertisingPlatformByLocalDto AdvertisingPlatformByLocal(string location)
-    {
-        var result = new AdvertisingPlatformByLocalDto();
-        result.Locals = location;
-
-        if (AdvertisingPlatformsHash.TryGetValue(location, out List<string>? value))
-        {
-            result.Success = true;
-            result.Message = "Данные найдены успешно";
-            result.Name = value;
-        }
-        else
-        {
-            result.Success = false;
-            result.Message = $"Данные по локации: {location} не найдены";
-        }
-
-
-        return result;
-    }
+    
 
     public async Task<FileReadResultDto> ReadInfoFromFile(FileUploadRequestDto fileUpload)
     {
         var result = new FileReadResultDto();
         var file = fileUpload._file;
 
-        try
-        {
+        
             if (file == null || file.Length == 0)
             {
                 result.Success = false;
@@ -117,26 +96,28 @@ public class AdvertisingPlatforms
                     string name = parts[0];
                     string[] locals = parts[1].Trim().Split(",");
 
+                    
+                    
                     //поочереди добовляем пути для площадки
-                    for (byte i = 0; i < locals.Length; i++)
+                    Parallel.For(0, locals.Length, i =>
                     {
                         string local = locals[i].Trim();
                         //Если путь начинает не с /, то пропускаем
-                        if (!local.StartsWith("/")) continue;
+                        if (!local.StartsWith("/")) ;
 
                         //добавляем платформу в Dictionary
                         AddPlatform(local, name);
 
                         int index = local.LastIndexOf("/", StringComparison.Ordinal);
-                        
+
                         while (index != 0)
                         {
                             local = local.Substring(0, index);
                             AddPlatform(local, new List<string>());
                             index = local.LastIndexOf("/", StringComparison.Ordinal);
                         }
-                        
-                        
+
+
 
                         //Получаем список ключей
                         var keys = AdvertisingPlatformsHash.Keys;
@@ -156,18 +137,12 @@ public class AdvertisingPlatforms
                                 }
                             }
                         }
-                    }
+                    });
                 }
             }
 
             result.Success = true;
             result.PlatformsByLocal = AdvertisingPlatformsHash;
-        }
-        catch (Exception ex)
-        {
-            result.Success = false;
-            result.ErrorMessage = $"Ошибка обработки файла: {ex.Message}";
-        }
 
         return result;
     }
