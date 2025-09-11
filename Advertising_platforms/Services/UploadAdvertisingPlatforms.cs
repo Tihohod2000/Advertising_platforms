@@ -1,9 +1,12 @@
-namespace Advertising_platforms;
+using System.Collections.Concurrent;
+using Advertising_platforms.Models;
+
+namespace Advertising_platforms.Services;
 
 public class UploadAdvertisingPlatforms
 {
-    public static Dictionary<string, List<string>> AdvertisingPlatformsHash { get; private set; } =
-        new Dictionary<string, List<string>>();
+    public static ConcurrentDictionary<string, List<string>> AdvertisingPlatformsHash { get; private set; } =
+        new ConcurrentDictionary<string, List<string>>();
 
     private void AddPlatform(string local, string name)
     {
@@ -50,99 +53,95 @@ public class UploadAdvertisingPlatforms
                 //Записываем новое значение
                 AdvertisingPlatformsHash[local].AddRange(names);
             }
-            
         }
     }
-    
+
 
     public async Task<FileReadResultDto> ReadInfoFromFile(FileUploadRequestDto fileUpload)
     {
         var result = new FileReadResultDto();
         var file = fileUpload._file;
 
-        
-            if (file == null || file.Length == 0)
+
+        if (file.Length == 0)
+        {
+            result.Success = false;
+            result.ErrorMessage = "Файл не предоставлен или пуст";
+            return result;
+        }
+
+        using (var reader = new StreamReader(file.OpenReadStream()))
+        {
+            string fileContent = await reader.ReadToEndAsync();
+            fileContent = fileContent.Replace("\r", "");
+
+            string[] ads = fileContent.Split("\n");
+
+            //Очищаем Dictionary
+            ClearDictionary();
+
+            foreach (var line in ads)
             {
-                result.Success = false;
-                result.ErrorMessage = "Файл не предоставлен или пуст";
-                return result;
-            }
+                // Проверям пустали строка
+                if (string.IsNullOrWhiteSpace(line)) continue;
 
-            using (var reader = new StreamReader(file.OpenReadStream()))
-            {
-                string fileContent = await reader.ReadToEndAsync();
-                fileContent = fileContent.Replace("\r", "");
+                string[] parts = line.Split(":", StringSplitOptions.RemoveEmptyEntries);
 
-                string[] ads = fileContent.Split("\n");
+                //Проверяем наличие названия площадки и наличие путей
+                if (parts.Length != 2)
+                    continue;
 
-                //Очищаем Dictionary
-                ClearDictionary();
+                //Если название или локация пусты, то пропускаем это строку
+                if (string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
+                    continue;
 
-                foreach (var line in ads)
+                string name = parts[0];
+                string[] locals = parts[1].Trim().Split(",");
+
+
+                //поочереди добовляем пути для площадки
+                for (int j = 0; j < locals.Length; j++)
                 {
-                    // Проверям пустали строка
-                    if (string.IsNullOrWhiteSpace(line)) continue;
+                    string local = locals[j].Trim();
+                    //Если путь начинает не с /, то пропускаем
+                    if (!local.StartsWith("/")) continue;
 
-                    string[] parts = line.Split(":", StringSplitOptions.RemoveEmptyEntries);
+                    //добавляем платформу в Dictionary
+                    AddPlatform(local, name);
+                    int index = local.LastIndexOf("/", StringComparison.Ordinal);
 
-                    //Проверяем наличие названия площадки и наличие путей
-                    if (parts.Length != 2)
-                        continue;
-
-                    //Если название или локация пусты, то пропускаем это строку
-                    if (string.IsNullOrWhiteSpace(parts[0]) || string.IsNullOrWhiteSpace(parts[1]))
-                        continue;
-
-                    string name = parts[0];
-                    string[] locals = parts[1].Trim().Split(",");
-
-                    
-                    
-                    //поочереди добовляем пути для площадки
-                    Parallel.For(0, locals.Length, i =>
+                    while (index != 0)
                     {
-                        string local = locals[i].Trim();
-                        //Если путь начинает не с /, то пропускаем
-                        if (!local.StartsWith("/")) ;
+                        local = local.Substring(0, index);
+                        AddPlatform(local, new List<string>());
+                        index = local.LastIndexOf("/", StringComparison.Ordinal);
+                    }
 
-                        //добавляем платформу в Dictionary
-                        AddPlatform(local, name);
 
-                        int index = local.LastIndexOf("/", StringComparison.Ordinal);
+                    //Получаем список ключей
+                    var keys = AdvertisingPlatformsHash.Keys;
 
-                        while (index != 0)
+                    //Добавляем площадки с широкими областями в списки площадок с узкими облостями
+                    foreach (var firstKey in keys)
+                    {
+                        foreach (var secondKey in keys)
                         {
-                            local = local.Substring(0, index);
-                            AddPlatform(local, new List<string>());
-                            index = local.LastIndexOf("/", StringComparison.Ordinal);
-                        }
+                            //Пропускаем полностью совподающие локации
+                            if (firstKey == secondKey) continue;
 
 
-
-                        //Получаем список ключей
-                        var keys = AdvertisingPlatformsHash.Keys;
-
-                        //Добавляем площадки с широкими областями в списки площадок с узкими облостями
-                        foreach (var firstKey in keys)
-                        {
-                            foreach (var secondKey in keys)
+                            if (firstKey.StartsWith(secondKey))
                             {
-                                //Пропускаем полностью совподающие локации
-                                if (firstKey == secondKey) continue;
-
-
-                                if (firstKey.StartsWith(secondKey))
-                                {
-                                    AddPlatform(firstKey, AdvertisingPlatformsHash[secondKey]);
-                                }
+                                AddPlatform(firstKey, AdvertisingPlatformsHash[secondKey]);
                             }
                         }
-                    });
+                    }
                 }
             }
+        }
 
-            result.Success = true;
-            result.PlatformsByLocal = AdvertisingPlatformsHash;
+        result.Success = true;
+        result.PlatformsByLocal = AdvertisingPlatformsHash;
 
         return result;
     }

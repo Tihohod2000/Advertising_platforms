@@ -1,26 +1,23 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
+using Advertising_platforms.Models;
+using Advertising_platforms.Services;
 
 namespace Advertising_platforms.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AdPlatformsController : ControllerBase
+public class AdPlatformsController(
+    UploadAdvertisingPlatforms uploadAdvertisingPlatforms,
+    GettingAdvertisingPlatforms gettingAdvertisingPlatforms
+    )
+    : ControllerBase
 {
-    private readonly UploadAdvertisingPlatforms _uploadAdvertisingPlatforms;
-    private readonly GettingAdvertisingPlatforms _gettingAdvertisingPlatforms;
-
-    public AdPlatformsController(UploadAdvertisingPlatforms uploadAdvertisingPlatforms, GettingAdvertisingPlatforms gettingAdvertisingPlatforms)
-    {
-        _uploadAdvertisingPlatforms = uploadAdvertisingPlatforms;
-        _gettingAdvertisingPlatforms = gettingAdvertisingPlatforms;
-    }
-
     [HttpGet("search")]
     public Task<IActionResult> Search([FromQuery] string location)
     {
-            AdvertisingPlatformByLocalDto result = _gettingAdvertisingPlatforms.AdvertisingPlatformByLocal(location);
+            AdvertisingPlatformByLocalDto result = gettingAdvertisingPlatforms.AdvertisingPlatformByLocal(location);
 
             if (result.Success == false)
             {
@@ -49,7 +46,7 @@ public class AdPlatformsController : ControllerBase
 
         FileUploadRequestDto file = new FileUploadRequestDto(fileUpload);
 
-        FileReadResultDto result = await _uploadAdvertisingPlatforms.ReadInfoFromFile(file);
+        FileReadResultDto result = await uploadAdvertisingPlatforms.ReadInfoFromFile(file);
 
         if (result.Success == false)
         {
