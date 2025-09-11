@@ -53,27 +53,7 @@ public class UploadAdvertisingPlatforms
             
         }
     }
-
-    public AdvertisingPlatformByLocalDto AdvertisingPlatformByLocal(string location)
-    {
-        var result = new AdvertisingPlatformByLocalDto();
-        result.Locals = location;
-
-        if (AdvertisingPlatformsHash.TryGetValue(location, out List<string>? value))
-        {
-            result.Success = true;
-            result.Message = "Данные найдены успешно";
-            result.Name = value;
-        }
-        else
-        {
-            result.Success = false;
-            result.Message = $"Данные по локации: {location} не найдены";
-        }
-
-
-        return result;
-    }
+    
 
     public async Task<FileReadResultDto> ReadInfoFromFile(FileUploadRequestDto fileUpload)
     {

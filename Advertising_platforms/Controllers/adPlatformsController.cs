@@ -9,16 +9,18 @@ namespace Advertising_platforms.Controllers;
 public class AdPlatformsController : ControllerBase
 {
     private readonly UploadAdvertisingPlatforms _uploadAdvertisingPlatforms;
+    private readonly GettingAdvertisingPlatforms _gettingAdvertisingPlatforms;
 
-    public AdPlatformsController(UploadAdvertisingPlatforms uploadAdvertisingPlatforms)
+    public AdPlatformsController(UploadAdvertisingPlatforms uploadAdvertisingPlatforms, GettingAdvertisingPlatforms gettingAdvertisingPlatforms)
     {
         _uploadAdvertisingPlatforms = uploadAdvertisingPlatforms;
+        _gettingAdvertisingPlatforms = gettingAdvertisingPlatforms;
     }
 
     [HttpGet("search")]
     public Task<IActionResult> Search([FromQuery] string location)
     {
-            AdvertisingPlatformByLocalDto result = _uploadAdvertisingPlatforms.AdvertisingPlatformByLocal(location);
+            AdvertisingPlatformByLocalDto result = _gettingAdvertisingPlatforms.AdvertisingPlatformByLocal(location);
 
             if (result.Success == false)
             {
