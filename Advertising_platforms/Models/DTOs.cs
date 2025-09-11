@@ -1,4 +1,6 @@
-namespace Advertising_platforms;
+using System.Collections.Concurrent;
+
+namespace Advertising_platforms.Models;
 
 // DTO для представления данных о рекламных площадках
 public class AdvertisingPlatformByLocalDto
@@ -14,15 +16,11 @@ public class FileReadResultDto
 {
     public bool Success { get; set; }
     public string ErrorMessage { get; set; } = string.Empty;
-    public Dictionary<string, List<string>> PlatformsByLocal { get; set; } = new Dictionary<string, List<string>>();
+    public ConcurrentDictionary<string, List<string>> PlatformsByLocal { get; set; } = new ConcurrentDictionary<string, List<string>>();
 }
 
 // DTO для передачи файла
-public class FileUploadRequestDto
+public class FileUploadRequestDto(IFormFile file)
 {
-    public FileUploadRequestDto(IFormFile File)
-    {
-        _file = File;
-    }
-    public IFormFile _file { get; private set; }
+    public IFormFile _file { get; private set; } = file;
 }

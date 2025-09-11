@@ -1,4 +1,6 @@
-namespace Advertising_platforms;
+using Advertising_platforms.Models;
+
+namespace Advertising_platforms.Services;
 
 public class GettingAdvertisingPlatforms
 {
